@@ -1,0 +1,42 @@
+{
+  "name": "pdfize",
+  "version": "0.1.0",
+  "description": "CLI tool to convert HTML files to PDF",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aautcq/pdfize.git"
+  },
+  "keywords": [
+    "PDF",
+    "HTML"
+  ],
+  "author": "Adrien Autricque <adrien.autricque@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aautcq/pdfize/issues"
+  },
+  "homepage": "https://github.com/aautcq/pdfize#readme",
+  "bin": {
+    "pdfize": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.6",
+    "@types/yargs": "^17.0.33",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@actions/exec": "^1.1.1",
+    "cheerio": "^1.1.0",
+    "puppeteer": "^24.10.1",
+    "sharp": "^0.34.2",
+    "yargs": "^18.0.0"
+  }
+}
