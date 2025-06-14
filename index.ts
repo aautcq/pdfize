@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 
 import puppeteer from 'puppeteer'
 import fs from 'node:fs'
