@@ -16,7 +16,7 @@
     "HTML"
   ],
   "author": "Adrien Autricque <adrien.autricque@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/aautcq/pdfize/issues"
   },
@@ -25,7 +25,8 @@
     "pdfize": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "shrinkpdf.sh"
   ],
   "devDependencies": {
     "@tsconfig/node20": "^20.1.6",
