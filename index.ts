@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
-import puppeteer from 'puppeteer'
-import fs from 'node:fs'
+import { launch } from 'puppeteer'
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import exec from '@actions/exec'
+import { exec } from '@actions/exec'
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 import { load } from 'cheerio'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const { source, output } = await yargs(hideBin(process.argv))
   .usage('')
@@ -26,7 +31,7 @@ const { source, output } = await yargs(hideBin(process.argv))
   .argv
 
 try {
-  const browser = await puppeteer.launch({ headless: true })
+  const browser = await launch({ headless: true })
   const page = await browser.newPage()
 
   await page.setRequestInterception(true)
@@ -53,25 +58,26 @@ try {
     }
   })
 
-  // set page content (HTML and CSS)
-  const html = fs.readFileSync(source, 'utf-8')
-
+  const html = readFileSync(source, 'utf-8')
   const $ = load(html)
 
-  await Promise.all($('head script')
-    .toArray()
-    .map((e) => $(e).attr('src'))
-    .filter((src) => src && !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('//'))
-    .map(async (src) => await page.addScriptTag({ path: src }))
-  )
+  // set page HTML content
+  await page.setContent(html, { waitUntil: 'networkidle2' })
 
-  await page.setContent(html, { waitUntil: 'networkidle0' })
-
+  // add styles
   await Promise.all($('head link[rel="stylesheet"]')
     .toArray()
     .map((e) => $(e).attr('href'))
-    .filter((href) => href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//'))
-    .map(async (href) => await page.addStyleTag({ path: href }))
+    .filter((path) => path && !path.startsWith('http://') && !path.startsWith('https://') && !path.startsWith('//'))
+    .map(async (path) => await page.addStyleTag({ path }))
+  )
+
+  // add scripts
+  await Promise.all($('head script')
+    .toArray()
+    .map((e) => $(e).attr('src'))
+    .filter((path) => path && !path.startsWith('http://') && !path.startsWith('https://') && !path.startsWith('//'))
+    .map(async (path) => await page.addScriptTag({ path }))
   )
 
   // to reflect CSS used for screens instead of print
@@ -99,10 +105,18 @@ try {
   await browser.close()
 
   // shrink PDF
-  await exec.exec(`./shrinkpdf.sh -r 300 -o ${finalFileTitle} ${tmpFileTitle}`)
+  await exec(
+    `/${resolve(__dirname, '../shrinkpdf.sh')} -r 300 -o ${finalFileTitle} ${tmpFileTitle}`,
+    [],
+    { silent: true }
+  )
 
   // remove temporary file
-  await exec.exec(`rm ${tmpFileTitle}`)
+  await exec(
+    `rm ${tmpFileTitle}`,
+    [],
+    { silent: true }
+  )
 
   console.log(`PDF generated: ${finalFileTitle}`)
 
